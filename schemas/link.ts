@@ -9,7 +9,7 @@ export const nanoid = (length: number = slugDefaultLength) => customAlphabet('23
 
 export const LinkSchema = z.object({
   id: z.string().trim().max(26).default(nanoid(10)),
-  url: z.string().trim().url().max(2048),
+  url: z.string().trim().url().max(8192),
   slug: z.string().trim().max(2048).regex(new RegExp(slugRegex)).default(nanoid()),
   comment: z.string().trim().max(2048).optional(),
   createdAt: z.number().int().safe().default(() => Math.floor(Date.now() / 1000)),
