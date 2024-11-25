@@ -5,7 +5,7 @@ import type { LinkSchema } from '@/schemas/link'
 export default eventHandler(async (event) => {
   const { pathname: slug } = parsePath(event.path.replace(/^\/|\/$/g, '')) // remove leading and trailing slashes
   const { slugRegex, reserveSlug } = useAppConfig(event)
-  const { homeURL, linkCacheTtl, redirectWithQuery } = useRuntimeConfig(event)
+  const { homeURL, linkCacheTtl, redirectWithQuery, notFoundRedirectUrl } = useRuntimeConfig(event)
   const { cloudflare } = event.context
 
   if (event.path === '/' && homeURL)
@@ -24,6 +24,10 @@ export default eventHandler(async (event) => {
       }
       const target = redirectWithQuery ? withQuery(link.url, getQuery(event)) : link.url
       return sendRedirect(event, target, +useRuntimeConfig(event).redirectStatusCode)
+    }
+    // 如果slug不存在且配置了notFoundRedirectUrl，则重定向
+    else if (notFoundRedirectUrl) {
+      return sendRedirect(event, notFoundRedirectUrl)
     }
   }
 })
