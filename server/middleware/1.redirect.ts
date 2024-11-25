@@ -11,22 +11,29 @@ export default eventHandler(async (event) => {
   if (event.path === '/' && homeURL)
     return sendRedirect(event, homeURL)
 
-  if (slug && !reserveSlug.includes(slug) && slugRegex.test(slug) && cloudflare) {
-    const { KV } = cloudflare.env
-    const link: z.infer<typeof LinkSchema> | null = await KV.get(`link:${slug}`, { type: 'json', cacheTtl: linkCacheTtl })
-    if (link) {
-      event.context.link = link
-      try {
-        await useAccessLog(event)
+  // 只处理非保留的slug
+  if (slug && !reserveSlug.includes(slug)) {
+    // 如果是合法的slug格式且有cloudflare环境
+    if (slugRegex.test(slug) && cloudflare) {
+      const { KV } = cloudflare.env
+      const link: z.infer<typeof LinkSchema> | null = await KV.get(`link:${slug}`, { type: 'json', cacheTtl: linkCacheTtl })
+      if (link) {
+        event.context.link = link
+        try {
+          await useAccessLog(event)
+        }
+        catch (error) {
+          console.error('Failed write access log:', error)
+        }
+        const target = redirectWithQuery ? withQuery(link.url, getQuery(event)) : link.url
+        return sendRedirect(event, target, +useRuntimeConfig(event).redirectStatusCode)
       }
-      catch (error) {
-        console.error('Failed write access log:', error)
-      }
-      const target = redirectWithQuery ? withQuery(link.url, getQuery(event)) : link.url
-      return sendRedirect(event, target, +useRuntimeConfig(event).redirectStatusCode)
     }
-    // 如果slug不存在且配置了notFoundRedirectUrl，则重定向
-    else if (notFoundRedirectUrl) {
+    
+    // 处理以下情况的重定向：
+    // 1. slug格式不合法
+    // 2. slug不存在
+    if (notFoundRedirectUrl) {
       return sendRedirect(event, notFoundRedirectUrl)
     }
   }
