@@ -1,5 +1,15 @@
 <script setup>
+import { navigateTo } from '#app'
+import { useRuntimeConfig } from '#imports'
+
 import errorImage from './assets/images/404.svg?raw'
+
+const { notFoundRedirectUrl } = useRuntimeConfig()
+
+// 如果配置了重定向URL，则进行重定向
+if (notFoundRedirectUrl) {
+  navigateTo(notFoundRedirectUrl, { external: true })
+}
 </script>
 
 <template>
