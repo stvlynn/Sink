@@ -2,6 +2,17 @@
 export default defineNuxtConfig({
   devtools: { enabled: true },
 
+  app: {
+    head: {
+      meta: [
+        { property: 'og:title', content: 'Twi.AM' },
+        { property: 'og:description', content: 'Twi.AM - Twitter MBTI Receipt' },
+        { property: 'og:url', content: 'https://twi.am/' },
+        { property: 'og:image', content: 'https://cdn.statically.io/gh/stvlynn/twitter_receipt@master/og-img.png' },
+      ],
+    },
+  },
+
   modules: [
     '@nuxthub/core',
     'shadcn-nuxt',
